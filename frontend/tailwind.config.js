@@ -5,7 +5,14 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+      backgroundImage: {
+        'hero': 'url(/hero-bg.jpg)'
+      },
+    extend: {
+      colors: {
+        green: '#77AB85'
+      },
+    },
   },
   plugins: [],
 }

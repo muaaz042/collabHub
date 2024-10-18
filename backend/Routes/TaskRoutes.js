@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Task = require('../models/TaskModel');
+const Task = require('../Models/TaskModel');
 const Workspace = require('../models/WorkspaceModel');
 const { requireLogin } = require('../Middleware/auth');
 
@@ -9,13 +9,13 @@ router.post('/create', requireLogin, async (req, res) => {
     if (req.user.role !== 'team lead') {
         return res.status(403).json({ error: 'Access denied' });
     }
-    const { title, description, assignedTo, deadline, workspaceId } = req.body;
+    const { title, assignedTo, deadline, workspaceId } = req.body;
     try {
         const workspace = await Workspace.findById(workspaceId);
         if (!workspace || workspace.teamLead.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'You are not authorized to create tasks in this workspace' });
         }
-        const task = new Task({ title, description, assignedTo, deadline, status: 'Pending' });
+        const task = new Task({ title, assignedTo, deadline, status: 'Pending' });
         workspace.tasks.push(task._id);
         await task.save();
         await workspace.save();
@@ -51,6 +51,36 @@ router.patch('/:id/status', requireLogin, async (req, res) => {
         res.json(task);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update task', details: err.message });
+    }
+});
+
+// Delete task (Team Lead or Admin only)
+router.delete('/:id', requireLogin, async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const workspace = await Workspace.findOne({ tasks: task._id });
+        if (!workspace) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        // Only team lead or admin can delete the task
+        if (req.user.role !== 'admin' && workspace.teamLead.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        // Remove the task from the workspace's task list
+        workspace.tasks = workspace.tasks.filter(taskId => taskId.toString() !== task._id.toString());
+        await workspace.save();
+
+        // Delete the task
+        await Task.findByIdAndDelete(task._id);
+        res.status(200).json({ message: 'Task deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete task', details: err.message });
     }
 });
 
