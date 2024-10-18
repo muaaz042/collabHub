@@ -26,8 +26,8 @@ app.post("/sendOTP", (req, res) => {
       res.status(200).send(response);
     })
     .catch((error) => {
-      console.error("Failed to send OTP:", error); // Log the error
-      res.status(500).send("Error sending OTP"); // Send a 500 status with a descriptive message
+      console.error("Failed to send OTP:", error);
+      res.status(500).send("Error sending OTP"); 
     });
 });
 

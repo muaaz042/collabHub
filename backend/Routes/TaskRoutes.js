@@ -4,7 +4,7 @@ const Task = require('../Models/TaskModel');
 const Workspace = require('../models/WorkspaceModel');
 const { requireLogin } = require('../Middleware/auth');
 
-// Create a task (Team Lead only)
+
 router.post('/create', requireLogin, async (req, res) => {
     if (req.user.role !== 'team lead') {
         return res.status(403).json({ error: 'Access denied' });
@@ -25,7 +25,7 @@ router.post('/create', requireLogin, async (req, res) => {
     }
 });
 
-// Get all tasks in a workspace (Team Lead or Team Member)
+
 router.get('/workspace/:workspaceId', requireLogin, async (req, res) => {
     const workspace = await Workspace.findById(req.params.workspaceId);
     if (!workspace || (!workspace.members.includes(req.user._id) && workspace.teamLead.toString() !== req.user._id.toString())) {
@@ -35,7 +35,7 @@ router.get('/workspace/:workspaceId', requireLogin, async (req, res) => {
     res.json(tasks);
 });
 
-// Update task status (Team Member)
+
 router.patch('/:id/status', requireLogin, async (req, res) => {
     const { status } = req.body;
     if (req.user.role !== 'team member') {
@@ -54,7 +54,7 @@ router.patch('/:id/status', requireLogin, async (req, res) => {
     }
 });
 
-// Delete task (Team Lead or Admin only)
+
 router.delete('/:id', requireLogin, async (req, res) => {
     try {
         const task = await Task.findById(req.params.id);
@@ -67,16 +67,13 @@ router.delete('/:id', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'Workspace not found' });
         }
 
-        // Only team lead or admin can delete the task
         if (req.user.role !== 'admin' && workspace.teamLead.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
-        // Remove the task from the workspace's task list
         workspace.tasks = workspace.tasks.filter(taskId => taskId.toString() !== task._id.toString());
         await workspace.save();
 
-        // Delete the task
         await Task.findByIdAndDelete(task._id);
         res.status(200).json({ message: 'Task deleted successfully' });
     } catch (err) {

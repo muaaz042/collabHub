@@ -8,6 +8,7 @@ import Register from './Pages/Register';
 import LandingPage from './Pages/Landing';
 import Dashboard from './Pages/dashboard';
 import VerifyOTP from './Pages/VerifyOTP';
+import UpdateProfile from './Pages/UpdateProfile';
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path='/' element={<LandingPage />} />
         <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/updateProfile' element={<UpdateProfile />} />
         <Route path='/verifyOTP' element={<VerifyOTP />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />

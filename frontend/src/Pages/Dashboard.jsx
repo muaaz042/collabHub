@@ -5,10 +5,16 @@ import axios from 'axios';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [workspaceTitle, setWorkspaceTitle] = useState('');
-  const [memberEmail, setmemberEmail] = useState('');
   const [workspaces, setWorkspaces] = useState([]);
   const [user, setUser] = useState(null);
+
+  const [data, setData] = useState({
+    name: "",
+    teamLeadEmail: "",
+    error: null,
+  });
+
+  const { name, teamLeadEmail, error } = data;
 
   const getUser = async () => {
     try {
@@ -44,12 +50,11 @@ const Dashboard = () => {
           headers: { Authorization: `colllabHub ${token}` },
         });
 
-        // Make sure response.data is an array
         if (Array.isArray(response.data)) {
           setWorkspaces(response.data);
         } else {
           console.error('Workspaces data is not an array:', response.data);
-          setWorkspaces([]);  // Fallback to an empty array if response is not as expected
+          setWorkspaces([]);
         }
       } catch (error) {
         console.error('Failed to fetch workspaces:', error.response?.data || error.message);
@@ -60,30 +65,36 @@ const Dashboard = () => {
   }, [navigate]);
 
 
-  // Handle adding a workspace
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setData({
+      ...data,
+      [name]: value,
+    });
+  };
+
   const handleAddWorkspace = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/workspace/create',
-        { name: workspaceTitle, admin: user._id, teamLeadId: memberEmail },
+        { name, teamLeadEmail },
         { headers: { Authorization: `collabHub ${token}` } }
       );
-      setWorkspaces([...workspaces, response.data]); // Update the workspace list with the new workspace
-      setWorkspaceTitle('');
-      setmemberEmail('');
+      setWorkspaces([...workspaces, response.data]);
+      setData({ ...data, name: "", teamLeadEmail: "" });
     } catch (error) {
+      setData({ ...data, error: error.response?.data?.error });
       console.error('Failed to create workspace:', error.response?.data || error.message);
     }
   };
 
-  // Handle deleting a workspace
   const handleDeleteWorkspace = async (workspaceId) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/workspace/${workspaceId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setWorkspaces(workspaces.filter(workspace => workspace._id !== workspaceId)); // Remove from state
+      setWorkspaces(workspaces.filter(workspace => workspace._id !== workspaceId));
     } catch (error) {
       console.error('Failed to delete workspace:', error.response?.data || error.message);
     }
@@ -91,20 +102,24 @@ const Dashboard = () => {
 
   return (
     <div className='w-full flex flex-col'>
+      {error ? <p className="text-red-500 lg:px-48 md:px-32 sm:px-20">{error}</p> : null}
       <div className='flex lg:px-48 md:px-32 sm:px-20 px-5 py-16 justify-between gap-5'>
+
         <input
           className="text-sm custom-input w-full px-4 py-2 border border-green rounded-lg shadow-sm bg-gray-100"
           placeholder="Enter workspace title"
           type="text"
-          value={workspaceTitle}
-          onChange={(e) => setWorkspaceTitle(e.target.value)}
+          name="name"
+          value={name}
+          onChange={handleChange}
         />
         <input
           className="text-sm custom-input w-full px-4 py-2 border border-green rounded-lg shadow-sm bg-gray-100"
           placeholder="Enter team lead email"
           type="email"
-          value={memberEmail}
-          onChange={(e) => setmemberEmail(e.target.value)}
+          name="teamLeadEmail"
+          value={teamLeadEmail}
+          onChange={handleChange}
         />
         <div
           className="w-full h-10 rounded-lg bg-transparent items-center justify-center flex border-2 border-green shadow-lg hover:bg-green text-green hover:text-white duration-300 cursor-pointer active:scale-[0.98]"
@@ -126,7 +141,6 @@ const Dashboard = () => {
             </div>
           </div>
         ))}
-
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [data, setData] = useState({
-    role: "",
     email: "",
     password: "",
     error: null,
@@ -20,10 +19,10 @@ const Login = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setData({
       ...data,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     });
   };
 
@@ -67,40 +66,7 @@ const Login = () => {
         <div className='flex items-center justify-center gap-3 mx-auto'>
           <img src="./logo.png" alt="TechHire logo" className='md:w-28 w-16' />
           <h1 className='md:text-3xl text-xl'>CollabHub</h1>
-        </div>
-        <h4 className='text-black text-sm font-bold mt-3'>Login as:</h4>
-        <div className='flex justify-start items-center flex-wrap gap-4'>
-          <label className='flex gap-1'>
-            <input
-              type="radio"
-              name="role"
-              value='admin'
-              checked={role === 'admin'}
-              onChange={handleChange}
-            />
-            <span>Admin</span>
-          </label>
-          <label className='flex gap-1'>
-            <input
-              type="radio"
-              name="role"
-              value='team lead'
-              checked={role === 'team lead'}
-              onChange={handleChange}
-            />
-            <span>Team Lead</span>
-          </label>
-          <label className='flex gap-1'>
-            <input
-              type="radio"
-              name="role"
-              value='team member'
-              checked={role === 'team member'}
-              onChange={handleChange}
-            />
-            <span>Team Member</span>
-          </label>
-        </div>
+        </div>        
         <form className='flex flex-col gap-4 mt-4 w-full '>
           {error ? <p className=" text-red-500">{error}</p> : null}
           <div className="w-full rounded-lg font-mono">

@@ -6,13 +6,13 @@ const WorkspaceCard = ({ workspaceId }) => {
     const [memberEmail, setMemberEmail] = useState('');
     const [taskTitle, setTaskTitle] = useState('');
     const [deadline, setDeadline] = useState('');
-    const [members, setMembers] = useState([]); // Assuming members data comes from props or initial fetch
+    const [members, setMembers] = useState([]);
     const [tasks, setTasks] = useState([]);
 
     const handleAddMember = async () => {
         try {
             const response = await axios.post(`http://localhost:5000/workspace/${workspaceId}/add-member`, { email: memberEmail });
-            setMembers([...members, response.data.member]);  // Update members list
+            setMembers([...members, response.data.member]);
             setMemberEmail('');
         } catch (error) {
             console.error('Failed to add member:', error.response.data);
@@ -37,7 +37,7 @@ const WorkspaceCard = ({ workspaceId }) => {
     const handleRemoveMember = async (memberId) => {
         try {
             await axios.delete(`/workspace/${workspaceId}/remove-member`, { data: { email: memberId } });
-            setMembers(members.filter(member => member._id !== memberId)); // Remove from the state
+            setMembers(members.filter(member => member._id !== memberId));
         } catch (error) {
             console.error('Failed to remove member:', error.response.data);
         }

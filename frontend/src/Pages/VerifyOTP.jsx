@@ -10,7 +10,6 @@ const VerifyOTP = () => {
     const [message, setMessage] = useState(null); 
     const navigate = useNavigate();
 
-    // Function to send OTP
     const sendOTP = async (e) => {
         e.preventDefault();
         try {

@@ -47,6 +47,10 @@ const Login = () => {
       setData({ ...data, error: "Password must be 5 - 8 characters" });
       return;
     }
+    if (!role) {
+      setData({ ...data, error: "Please select a role" });
+      return;
+    }
     try {
       setData({ ...data, error: null });
       await axios.post('http://localhost:5000/user/register',

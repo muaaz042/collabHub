@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const User = require('../Models/UserModel');
 const { requireLogin } = require('../Middleware/auth');
 
-// User registration
 router.post('/register', async (req, res) => {
     const { name, email, password, role } = req.body;
     try {
@@ -15,7 +14,13 @@ router.post('/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ name, email, password: hashedPassword, role });
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+            plainTextPassword: password,
+            role
+        });
         await user.save();
         
         res.status(201).json({ message: 'User registered successfully' });
@@ -24,7 +29,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// User login
+
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -43,12 +48,12 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get current user details (Authenticated)
+
 router.get('/me', requireLogin, (req, res) => {
     res.json(req.user);
 });
 
-// Get current user details with workspaces (Authenticated)
+
 router.get('/get-me', requireLogin, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate('workspaces');
@@ -58,20 +63,20 @@ router.get('/get-me', requireLogin, async (req, res) => {
     }
 });
 
-// Update user (Authenticated)
 router.put('/update', requireLogin, async (req, res) => {
     const { name, email, password } = req.body;
     try {
-        // Find the user by ID
         const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Update fields only if provided
         if (name) user.name = name;
         if (email) user.email = email;
-        if (password) user.password = await bcrypt.hash(password, 10);
+        if (password) {
+            user.plainTextPassword = password;
+            user.password = await bcrypt.hash(password, 10); 
+        }
 
         await user.save();
         res.status(200).json({ message: 'User updated successfully', user });
@@ -80,10 +85,9 @@ router.put('/update', requireLogin, async (req, res) => {
     }
 });
 
-// Delete user (Authenticated)
+
 router.delete('/delete', requireLogin, async (req, res) => {
     try {
-        // Find and delete the user by ID
         await User.findByIdAndDelete(req.user._id);
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {

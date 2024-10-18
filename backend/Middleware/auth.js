@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
-const User = require('../Models/UserModel'); // Adjust path to your User model
+const User = require('../Models/UserModel');
 
 exports.requireLogin = async (req, res, next) => {
     try {
         if (req.headers.authorization) {
             const token = req.headers.authorization.split(" ")[1];
-            const decode = jwt.verify(token, "collabHub"); // Make sure to match your JWT secret
+            const decode = jwt.verify(token, "collabHub");
             const user = await User.findById(decode._id);
             if (!user) {
                 return res.status(401).json({ error: 'Unauthorized' });
